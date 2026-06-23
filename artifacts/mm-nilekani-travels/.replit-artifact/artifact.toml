@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "M M Nilekani Travels"
+version = "1.0.0"
+id = "artifacts/mm-nilekani-travels"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20630
+
+[services.development]
+run = "pnpm --filter @workspace/mm-nilekani-travels run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/mm-nilekani-travels", "run", "build" ]
+publicDir = "artifacts/mm-nilekani-travels/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20630"
+BASE_PATH = "/"

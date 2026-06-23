@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" fill="none">
+  <rect width="400" height="100" fill="transparent" />
+  <text x="200" y="60" font-family="Outfit, sans-serif" font-weight="700" font-size="32" fill="currentColor" text-anchor="middle" letter-spacing="4">MM NILEKANI</text>
+  <text x="200" y="80" font-family="Outfit, sans-serif" font-weight="400" font-size="12" fill="currentColor" text-anchor="middle" letter-spacing="8" opacity="0.7">TRAVELS</text>
+  <path d="M120 40 L280 40" stroke="currentColor" stroke-width="1" opacity="0.3" />
+</svg>

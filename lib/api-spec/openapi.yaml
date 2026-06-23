@@ -3,20 +3,36 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: M M Nilekani Travels API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: destinations
+    description: Destination management
+  - name: bookings
+    description: Booking management
+  - name: wishlist
+    description: Wishlist management
+  - name: reviews
+    description: Reviews management
+  - name: users
+    description: User management
+  - name: notifications
+    description: Notification management
+  - name: admin
+    description: Admin operations
+  - name: payments
+    description: Payment operations
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +40,606 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # Destinations
+  /destinations:
+    get:
+      operationId: listDestinations
+      tags: [destinations]
+      summary: List destinations with filters
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: country
+          in: query
+          schema:
+            type: string
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+        - name: minRating
+          in: query
+          schema:
+            type: number
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [price_asc, price_desc, rating_desc, newest, popular]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of destinations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationList"
+    post:
+      operationId: createDestination
+      tags: [destinations]
+      summary: Create destination (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationInput"
+      responses:
+        "201":
+          description: Created destination
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Destination"
+
+  /destinations/featured:
+    get:
+      operationId: getFeaturedDestinations
+      tags: [destinations]
+      summary: Get featured destinations
+      responses:
+        "200":
+          description: Featured destinations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Destination"
+
+  /destinations/categories:
+    get:
+      operationId: getDestinationCategories
+      tags: [destinations]
+      summary: Get categories with counts
+      responses:
+        "200":
+          description: Category list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategoryStat"
+
+  /destinations/popular-countries:
+    get:
+      operationId: getPopularCountries
+      tags: [destinations]
+      summary: Get popular countries
+      responses:
+        "200":
+          description: Popular countries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CountryStat"
+
+  /destinations/{id}:
+    get:
+      operationId: getDestination
+      tags: [destinations]
+      summary: Get destination by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Destination detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDetail"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateDestination
+      tags: [destinations]
+      summary: Update destination (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationUpdate"
+      responses:
+        "200":
+          description: Updated destination
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Destination"
+    delete:
+      operationId: deleteDestination
+      tags: [destinations]
+      summary: Delete destination (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # Bookings
+  /bookings:
+    get:
+      operationId: listBookings
+      tags: [bookings]
+      summary: List user's bookings
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Booking list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+    post:
+      operationId: createBooking
+      tags: [bookings]
+      summary: Create a booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingInput"
+      responses:
+        "201":
+          description: Created booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  /bookings/admin:
+    get:
+      operationId: listAllBookings
+      tags: [bookings]
+      summary: List all bookings (admin)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: All bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BookingWithUser"
+
+  /bookings/{id}:
+    get:
+      operationId: getBooking
+      tags: [bookings]
+      summary: Get booking details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Booking detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDetail"
+    patch:
+      operationId: updateBooking
+      tags: [bookings]
+      summary: Update booking status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingUpdate"
+      responses:
+        "200":
+          description: Updated booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  # Wishlist
+  /wishlist:
+    get:
+      operationId: getWishlist
+      tags: [wishlist]
+      summary: Get user's wishlist
+      responses:
+        "200":
+          description: Wishlist items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WishlistItem"
+    post:
+      operationId: addToWishlist
+      tags: [wishlist]
+      summary: Add destination to wishlist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WishlistInput"
+      responses:
+        "201":
+          description: Added to wishlist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WishlistItem"
+
+  /wishlist/{destinationId}:
+    delete:
+      operationId: removeFromWishlist
+      tags: [wishlist]
+      summary: Remove from wishlist
+      parameters:
+        - name: destinationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Removed
+
+  # Reviews
+  /reviews:
+    get:
+      operationId: listReviews
+      tags: [reviews]
+      summary: Get reviews for a destination
+      parameters:
+        - name: destinationId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Reviews list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+    post:
+      operationId: createReview
+      tags: [reviews]
+      summary: Create a review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewInput"
+      responses:
+        "201":
+          description: Created review
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+
+  /reviews/{id}:
+    delete:
+      operationId: deleteReview
+      tags: [reviews]
+      summary: Delete a review
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # Users
+  /users/me:
+    get:
+      operationId: getMe
+      tags: [users]
+      summary: Get current user profile
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    patch:
+      operationId: updateMe
+      tags: [users]
+      summary: Update current user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List all users (admin)
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Users list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /users/{id}/role:
+    patch:
+      operationId: updateUserRole
+      tags: [users]
+      summary: Update user role (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoleUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  # Notifications
+  /notifications:
+    get:
+      operationId: getNotifications
+      tags: [notifications]
+      summary: Get user notifications
+      responses:
+        "200":
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+
+  /notifications/{id}/read:
+    patch:
+      operationId: markNotificationRead
+      tags: [notifications]
+      summary: Mark notification as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated notification
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+
+  /notifications/read-all:
+    patch:
+      operationId: markAllNotificationsRead
+      tags: [notifications]
+      summary: Mark all notifications as read
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # Admin Stats
+  /admin/stats:
+    get:
+      operationId: getAdminStats
+      tags: [admin]
+      summary: Get admin dashboard statistics
+      responses:
+        "200":
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+
+  /admin/revenue:
+    get:
+      operationId: getRevenueStats
+      tags: [admin]
+      summary: Get revenue statistics
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [week, month, year]
+      responses:
+        "200":
+          description: Revenue data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RevenueStat"
+
+  # Payments
+  /payments/create-intent:
+    post:
+      operationId: createPaymentIntent
+      tags: [payments]
+      summary: Create Stripe payment intent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentIntentInput"
+      responses:
+        "200":
+          description: Payment intent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentIntent"
+
+  /payments/confirm:
+    post:
+      operationId: confirmPayment
+      tags: [payments]
+      summary: Confirm payment and update booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentConfirmInput"
+      responses:
+        "200":
+          description: Payment confirmed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +647,587 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required: [success]
+
+    Destination:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        country:
+          type: string
+        city:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        pricePerPerson:
+          type: number
+        images:
+          type: array
+          items:
+            type: string
+        rating:
+          type: number
+        reviewCount:
+          type: integer
+        featured:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+        duration:
+          type: string
+        maxGuests:
+          type: integer
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+      required:
+        [id, name, country, city, description, category, pricePerPerson, images, rating, reviewCount, featured, tags, duration, maxGuests, isActive, createdAt]
+
+    DestinationDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        country:
+          type: string
+        city:
+          type: string
+        description:
+          type: string
+        longDescription:
+          type: string
+        category:
+          type: string
+        pricePerPerson:
+          type: number
+        images:
+          type: array
+          items:
+            type: string
+        rating:
+          type: number
+        reviewCount:
+          type: integer
+        featured:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+        duration:
+          type: string
+        maxGuests:
+          type: integer
+        highlights:
+          type: array
+          items:
+            type: string
+        inclusions:
+          type: array
+          items:
+            type: string
+        exclusions:
+          type: array
+          items:
+            type: string
+        latitude:
+          type: ["number", "null"]
+        longitude:
+          type: ["number", "null"]
+        isActive:
+          type: boolean
+        isWishlisted:
+          type: boolean
+        createdAt:
+          type: string
+      required:
+        [id, name, country, city, description, longDescription, category, pricePerPerson, images, rating, reviewCount, featured, tags, duration, maxGuests, highlights, inclusions, exclusions, latitude, longitude, isActive, isWishlisted, createdAt]
+
+    DestinationList:
+      type: object
+      properties:
+        destinations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Destination"
+        total:
+          type: integer
+        hasMore:
+          type: boolean
+      required: [destinations, total, hasMore]
+
+    DestinationInput:
+      type: object
+      properties:
+        name:
+          type: string
+        country:
+          type: string
+        city:
+          type: string
+        description:
+          type: string
+        longDescription:
+          type: string
+        category:
+          type: string
+        pricePerPerson:
+          type: number
+        images:
+          type: array
+          items:
+            type: string
+        featured:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+        duration:
+          type: string
+        maxGuests:
+          type: integer
+        highlights:
+          type: array
+          items:
+            type: string
+        inclusions:
+          type: array
+          items:
+            type: string
+        exclusions:
+          type: array
+          items:
+            type: string
+        latitude:
+          type: ["number", "null"]
+        longitude:
+          type: ["number", "null"]
+      required: [name, country, city, description, category, pricePerPerson, images, duration, maxGuests]
+
+    DestinationUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        country:
+          type: string
+        city:
+          type: string
+        description:
+          type: string
+        longDescription:
+          type: string
+        category:
+          type: string
+        pricePerPerson:
+          type: number
+        images:
+          type: array
+          items:
+            type: string
+        featured:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+        duration:
+          type: string
+        maxGuests:
+          type: integer
+        highlights:
+          type: array
+          items:
+            type: string
+        inclusions:
+          type: array
+          items:
+            type: string
+        exclusions:
+          type: array
+          items:
+            type: string
+        isActive:
+          type: boolean
+        latitude:
+          type: ["number", "null"]
+        longitude:
+          type: ["number", "null"]
+
+    CategoryStat:
+      type: object
+      properties:
+        category:
+          type: string
+        count:
+          type: integer
+        avgPrice:
+          type: number
+      required: [category, count, avgPrice]
+
+    CountryStat:
+      type: object
+      properties:
+        country:
+          type: string
+        count:
+          type: integer
+        coverImage:
+          type: string
+      required: [country, count, coverImage]
+
+    Booking:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        destinationId:
+          type: integer
+        destinationName:
+          type: string
+        destinationImage:
+          type: string
+        checkIn:
+          type: string
+        checkOut:
+          type: string
+        guests:
+          type: integer
+        totalAmount:
+          type: number
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled, completed]
+        paymentStatus:
+          type: string
+          enum: [unpaid, paid, refunded]
+        paymentIntentId:
+          type: ["string", "null"]
+        specialRequests:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        [id, userId, destinationId, destinationName, destinationImage, checkIn, checkOut, guests, totalAmount, status, paymentStatus, paymentIntentId, specialRequests, createdAt]
+
+    BookingDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        destinationId:
+          type: integer
+        destination:
+          $ref: "#/components/schemas/Destination"
+        checkIn:
+          type: string
+        checkOut:
+          type: string
+        guests:
+          type: integer
+        totalAmount:
+          type: number
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled, completed]
+        paymentStatus:
+          type: string
+          enum: [unpaid, paid, refunded]
+        paymentIntentId:
+          type: ["string", "null"]
+        specialRequests:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        [id, userId, destinationId, destination, checkIn, checkOut, guests, totalAmount, status, paymentStatus, paymentIntentId, specialRequests, createdAt]
+
+    BookingWithUser:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        userName:
+          type: string
+        userEmail:
+          type: string
+        destinationId:
+          type: integer
+        destinationName:
+          type: string
+        destinationImage:
+          type: string
+        checkIn:
+          type: string
+        checkOut:
+          type: string
+        guests:
+          type: integer
+        totalAmount:
+          type: number
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled, completed]
+        paymentStatus:
+          type: string
+          enum: [unpaid, paid, refunded]
+        createdAt:
+          type: string
+      required:
+        [id, userId, userName, userEmail, destinationId, destinationName, destinationImage, checkIn, checkOut, guests, totalAmount, status, paymentStatus, createdAt]
+
+    BookingInput:
+      type: object
+      properties:
+        destinationId:
+          type: integer
+        checkIn:
+          type: string
+        checkOut:
+          type: string
+        guests:
+          type: integer
+        specialRequests:
+          type: string
+      required: [destinationId, checkIn, checkOut, guests]
+
+    BookingUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled, completed]
+        paymentStatus:
+          type: string
+          enum: [unpaid, paid, refunded]
+
+    WishlistItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        destinationId:
+          type: integer
+        destination:
+          $ref: "#/components/schemas/Destination"
+        createdAt:
+          type: string
+      required: [id, userId, destinationId, destination, createdAt]
+
+    WishlistInput:
+      type: object
+      properties:
+        destinationId:
+          type: integer
+      required: [destinationId]
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        userName:
+          type: string
+        userAvatar:
+          type: ["string", "null"]
+        destinationId:
+          type: integer
+        rating:
+          type: integer
+        comment:
+          type: string
+        createdAt:
+          type: string
+      required: [id, userId, userName, userAvatar, destinationId, rating, comment, createdAt]
+
+    ReviewInput:
+      type: object
+      properties:
+        destinationId:
+          type: integer
+        rating:
+          type: integer
+        comment:
+          type: string
+      required: [destinationId, rating, comment]
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        avatar:
+          type: ["string", "null"]
+        role:
+          type: string
+          enum: [user, admin]
+        phone:
+          type: ["string", "null"]
+        nationality:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required: [id, name, email, avatar, role, phone, nationality, createdAt]
+
+    UserUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        nationality:
+          type: string
+        avatar:
+          type: string
+
+    RoleUpdate:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [user, admin]
+      required: [role]
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        title:
+          type: string
+        message:
+          type: string
+        type:
+          type: string
+          enum: [booking_confirmed, booking_cancelled, payment_success, review_posted, general]
+        isRead:
+          type: boolean
+        relatedId:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+      required: [id, userId, title, message, type, isRead, relatedId, createdAt]
+
+    AdminStats:
+      type: object
+      properties:
+        totalBookings:
+          type: integer
+        activeBookings:
+          type: integer
+        totalRevenue:
+          type: number
+        monthlyRevenue:
+          type: number
+        totalDestinations:
+          type: integer
+        totalUsers:
+          type: integer
+        avgRating:
+          type: number
+        bookingsByStatus:
+          type: object
+          additionalProperties:
+            type: integer
+        recentBookings:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingWithUser"
+        topDestinations:
+          type: array
+          items:
+            $ref: "#/components/schemas/DestinationStat"
+      required:
+        [totalBookings, activeBookings, totalRevenue, monthlyRevenue, totalDestinations, totalUsers, avgRating, bookingsByStatus, recentBookings, topDestinations]
+
+    DestinationStat:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        country:
+          type: string
+        bookingCount:
+          type: integer
+        revenue:
+          type: number
+        rating:
+          type: number
+      required: [id, name, country, bookingCount, revenue, rating]
+
+    RevenueStat:
+      type: object
+      properties:
+        period:
+          type: string
+        revenue:
+          type: number
+        bookings:
+          type: integer
+      required: [period, revenue, bookings]
+
+    PaymentIntentInput:
+      type: object
+      properties:
+        bookingId:
+          type: integer
+        amount:
+          type: number
+      required: [bookingId, amount]
+
+    PaymentIntent:
+      type: object
+      properties:
+        clientSecret:
+          type: string
+        paymentIntentId:
+          type: string
+      required: [clientSecret, paymentIntentId]
+
+    PaymentConfirmInput:
+      type: object
+      properties:
+        bookingId:
+          type: integer
+        paymentIntentId:
+          type: string
+      required: [bookingId, paymentIntentId]

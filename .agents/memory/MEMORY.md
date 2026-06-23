@@ -1,0 +1,4 @@
+- [Express 5 params typing](express5-params.md) — req.params values are `string | string[]`; always use `String(req.params["x"])` before parseInt.
+- [drizzle-zod v4 identity columns](drizzle-zod-identity.md) — `generatedAlwaysAsIdentity()` columns are auto-excluded from insert schemas; never `.omit({ id: true })` for those.
+- [Composite lib build order](lib-build-order.md) — run `pnpm run typecheck:libs` before leaf artifact typechecks; api-server depends on compiled db declarations.
+- [Stripe API version](stripe-api-version.md) — current installed version expects `"2026-05-27.dahlia"`; update when bumping stripe package.
