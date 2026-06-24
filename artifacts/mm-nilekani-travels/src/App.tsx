@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
-import { ClerkProvider, SignIn, SignUp, Show, useClerk } from '@clerk/react';
+import { ClerkProvider, SignIn, SignUp, Show, useClerk, useAuth } from '@clerk/react';
 import { publishableKeyFromHost } from '@clerk/react/internal';
 import { shadcn } from '@clerk/themes';
 import { Switch, Route, Redirect, useLocation, Router as WouterRouter } from 'wouter';
 import { QueryClientProvider, useQueryClient } from "@tanstack/react-query";
-import { queryClient } from "@workspace/api-client-react";
+import { queryClient, setAuthTokenGetter } from "@workspace/api-client-react";
 
 import { Navbar } from "./components/layout/navbar";
 import { Footer } from "./components/layout/footer";
@@ -110,6 +110,17 @@ function SignUpPage() {
   );
 }
 
+function ClerkAuthSetup() {
+  const { getToken } = useAuth();
+
+  useEffect(() => {
+    setAuthTokenGetter(() => getToken());
+    return () => setAuthTokenGetter(null);
+  }, [getToken]);
+
+  return null;
+}
+
 function ClerkQueryClientCacheInvalidator() {
   const { addListener } = useClerk();
   const queryClient = useQueryClient();
@@ -146,6 +157,7 @@ function ClerkProviderWithRoutes() {
       routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
     >
       <QueryClientProvider client={queryClient}>
+        <ClerkAuthSetup />
         <ClerkQueryClientCacheInvalidator />
         <Navbar />
         <main className="min-h-screen pt-20">
